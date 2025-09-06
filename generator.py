@@ -12,7 +12,7 @@ if __name__ == '__main__':
                         help='输入皮肤图片路径（默认：skin/skin.png）')
     parser.add_argument('-o', '--output', default='output/skin.stl',
                         help='输出STL文件路径（默认：output/skin.stl）')
-
+    parser.add_argument('-s', "--slim", type=bool, default=False, help='启用纤细皮肤（默认：False）')
     parser.add_argument('--head_x', type=float, default=0, help='头部X轴旋转角度（默认：0）')
     parser.add_argument('--head_y', type=float, default=0, help='头部Y轴旋转角度（默认：0）')
     parser.add_argument('--right_arm_x', type=float, default=0, help='右臂X轴旋转角度（默认：0）')
