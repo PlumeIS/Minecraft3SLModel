@@ -41,8 +41,9 @@ class MinecraftSkinRenderer:
         "left_leg": np.array([10.0, 4.0, 12.0])
     }
 
-    def __init__(self, skin_path: str):
+    def __init__(self, skin_path: str, slim: bool = False):
         self.skin_path: str = skin_path
+        self.slim: bool = slim
 
     @staticmethod
     def create_voxel(params: VoxelParams) -> mesh.Mesh:
@@ -76,17 +77,31 @@ class MinecraftSkinRenderer:
                 voxel.vectors[i][j] = vertices[face[j], :]
         return voxel
 
-    @staticmethod
-    def create_body() -> Dict[str, mesh.Mesh]:
+    def create_body(self) -> Dict[str, mesh.Mesh]:
         """创建身体基础网格"""
-        return {
+        basic = {
             "right_leg": MinecraftSkinRenderer.create_voxel(VoxelParams(4, 2, 0, 4, 4, 12)),
             "left_leg": MinecraftSkinRenderer.create_voxel(VoxelParams(8, 2, 0, 4, 4, 12)),
-            "right_arm": MinecraftSkinRenderer.create_voxel(VoxelParams(0, 2, 12, 4, 4, 12)),
-            "left_arm": MinecraftSkinRenderer.create_voxel(VoxelParams(12, 2, 12, 4, 4, 12)),
             "body": MinecraftSkinRenderer.create_voxel(VoxelParams(4, 2, 12, 8, 4, 12)),
             "head": MinecraftSkinRenderer.create_voxel(VoxelParams(4, 0, 24, 8, 8, 8))
         }
+
+        classic = {
+            "right_arm": MinecraftSkinRenderer.create_voxel(VoxelParams(0, 2, 12, 4, 4, 12)),
+            "left_arm": MinecraftSkinRenderer.create_voxel(VoxelParams(12, 2, 12, 4, 4, 12))
+        }
+
+        slim = {
+            "right_arm": MinecraftSkinRenderer.create_voxel(VoxelParams(1, 2, 12, 3, 4, 12)),
+            "left_arm": MinecraftSkinRenderer.create_voxel(VoxelParams(12, 2, 12, 3, 4, 12))
+        }
+
+        if not self.slim:
+            basic.update(classic)
+        else:
+            basic.update(slim)
+
+        return basic
 
     @staticmethod
     def create_layer(layer_params: LayerParams, pixels, thickness: float = 0.4) -> List[mesh.Mesh]:
@@ -165,11 +180,10 @@ class MinecraftSkinRenderer:
 
         return layers
 
-    @staticmethod
-    def create_texture_mapping(thickness: float = 0.4) -> dict[
+    def create_texture_mapping(self, thickness: float = 0.4) -> dict[
         str, dict[str, LayerParams] | dict[str, LayerParams] | dict[str, LayerParams] | dict[str, LayerParams] | dict[
             str, LayerParams] | dict[str, LayerParams]]:
-        texture_mapping = {
+        basic_texture_mapping = {
             "head": {
                 "front": LayerParams((8, 8, 28), 8, 8, "y", (40, 16), (48, 8)),
                 "back": LayerParams((8, 0 - thickness, 28), 8, 8, "y", (64, 16), (56, 8)),
@@ -185,22 +199,6 @@ class MinecraftSkinRenderer:
                 "right": LayerParams((12, 4, 18), 4, 12, "x", (32, 48), (28, 36)),
                 "top": LayerParams((8, 4, 24), 8, 4, "z", (20, 32), (28, 36)),
                 "bottom": LayerParams((8, 4, 12 - thickness), 8, 4, "z", (28, 32), (36, 36)),
-            },
-            "right_arm": {
-                "front": LayerParams((2, 6, 18), 4, 12, "y", (44, 48), (48, 36)),
-                "back": LayerParams((2, 2 - thickness, 18), 4, 12, "y", (56, 48), (52, 36)),
-                "left": LayerParams((0 - thickness, 4, 18), 4, 12, "x", (40, 48), (44, 36)),
-                "right": LayerParams((4, 4, 18), 4, 12, "x", (52, 48), (48, 36)),
-                "top": LayerParams((2, 4, 24), 4, 4, "z", (44, 32), (48, 36)),
-                "bottom": LayerParams((2, 4, 12 - thickness), 4, 4, "z", (48, 32), (52, 36)),
-            },
-            "left_arm": {
-                "front": LayerParams((14, 6, 18), 4, 12, "y", (52, 64), (56, 52)),
-                "back": LayerParams((14, 2 - thickness, 18), 4, 12, "y", (64, 64), (60, 52)),
-                "left": LayerParams((12 - thickness, 4, 18), 4, 12, "x", (48, 64), (52, 52)),
-                "right": LayerParams((16, 4, 18), 4, 12, "x", (60, 64), (56, 52)),
-                "top": LayerParams((14, 4, 24), 4, 4, "z", (52, 48), (56, 52)),
-                "bottom": LayerParams((14, 4, 12 - thickness), 4, 4, "z", (56, 48), (60, 52)),
             },
             "right_leg": {
                 "front": LayerParams((6, 6, 6), 4, 12, "y", (4, 48), (8, 36)),
@@ -219,10 +217,53 @@ class MinecraftSkinRenderer:
                 "bottom": LayerParams((10, 4, 0 - thickness), 4, 4, "z", (8, 48), (12, 52)),
             }
         }
-        return texture_mapping
+        classic = {
+            "right_arm": {
+                "front": LayerParams((2, 6, 18), 4, 12, "y", (44, 48), (48, 36)),
+                "back": LayerParams((2, 2 - thickness, 18), 4, 12, "y", (56, 48), (52, 36)),
+                "left": LayerParams((0 - thickness, 4, 18), 4, 12, "x", (40, 48), (44, 36)),
+                "right": LayerParams((4, 4, 18), 4, 12, "x", (52, 48), (48, 36)),
+                "top": LayerParams((2, 4, 24), 4, 4, "z", (44, 32), (48, 36)),
+                "bottom": LayerParams((2, 4, 12 - thickness), 4, 4, "z", (48, 32), (52, 36)),
+            },
+            "left_arm": {
+                "front": LayerParams((14, 6, 18), 4, 12, "y", (52, 64), (56, 52)),
+                "back": LayerParams((14, 2 - thickness, 18), 4, 12, "y", (64, 64), (60, 52)),
+                "left": LayerParams((12 - thickness, 4, 18), 4, 12, "x", (48, 64), (52, 52)),
+                "right": LayerParams((16, 4, 18), 4, 12, "x", (60, 64), (56, 52)),
+                "top": LayerParams((14, 4, 24), 4, 4, "z", (52, 48), (56, 52)),
+                "bottom": LayerParams((14, 4, 12 - thickness), 4, 4, "z", (56, 48), (60, 52)),
+            }
+        }
+        slim = {
+            "right_arm": {
+                "front": LayerParams((2.5, 6, 18), 3, 12, "y", (44, 48), (47, 36)),
+                "back": LayerParams((2.5, 2 - thickness, 18), 3, 12, "y", (54, 48), (51, 36)),
+                "left": LayerParams((1 - thickness, 4, 18), 4, 12, "x", (40, 48), (44, 36)),
+                "right": LayerParams((4, 4, 18), 4, 12, "x", (51, 48), (47, 36)),
+                "top": LayerParams((2.5, 4, 24), 3, 4, "z", (44, 32), (47, 36)),
+                "bottom": LayerParams((2.5, 4, 12 - thickness), 3, 4, "z", (47, 32), (50, 36)),
+            },
+            "left_arm": {
+                "front": LayerParams((14-.5, 6, 18), 3, 12, "y", (52, 64), (55, 52)),
+                "back": LayerParams((14-.5, 2 - thickness, 18), 3, 12, "y", (62, 64), (59, 52)),
+                "left": LayerParams((12 - thickness, 4, 18), 4, 12, "x", (48, 64), (52, 52)),
+                "right": LayerParams((15, 4, 18), 4, 12, "x", (59, 64), (55, 52)),
+                "top": LayerParams((14-.5, 4, 24), 3, 4, "z", (52, 48), (55, 52)),
+                "bottom": LayerParams((14-.5, 4, 12 - thickness), 3, 4, "z", (55, 48), (58, 52)),
+            }
+        }
+
+        if not self.slim:
+            basic_texture_mapping.update(classic)
+        else:
+            basic_texture_mapping.update(slim)
+
+        return basic_texture_mapping
 
     @staticmethod
-    def create_skin_parts(body_parts: Dict[str, mesh.Mesh], layer_parts: Dict[str, List[mesh.Mesh]]) -> Dict[str, List[mesh.Mesh]]:
+    def create_skin_parts(body_parts: Dict[str, mesh.Mesh], layer_parts: Dict[str, List[mesh.Mesh]]) -> Dict[
+        str, List[mesh.Mesh]]:
         """归类网格部分"""
         return {
             "head": [body_parts["head"], *layer_parts["head_layer"]],

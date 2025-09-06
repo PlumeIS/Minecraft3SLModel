@@ -29,7 +29,7 @@ if __name__ == '__main__':
     skin_path = args.input
     output_stl = args.output
 
-    renderer = SkinRenderer.MinecraftSkinRenderer(skin_path)
+    renderer = SkinRenderer.MinecraftSkinRenderer(skin_path, True)
     body = renderer.create_body()
     layers = renderer.create_layers()
 
@@ -45,7 +45,8 @@ if __name__ == '__main__':
     )
 
     combined_voxels = HandleTools.combine(skin_parts)
-    combined_mesh = mesh.Mesh(np.concatenate([v.data for v in combined_voxels]))
-    combined_mesh.save(output_stl)
+
+    HandleTools.save(output_stl, combined_voxels)
+    # HandleTools.view_test(output_stl)
 
     print(f"STL文件已保存: {output_stl}")

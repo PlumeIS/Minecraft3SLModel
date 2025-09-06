@@ -1,4 +1,5 @@
 import math
+import os
 from typing import Dict, List
 
 import numpy as np
@@ -11,6 +12,20 @@ def combine(skin_parts: Dict[str, List[mesh.Mesh]]) -> List[mesh.Mesh]:
     """合并所有网格部分"""
     return [mesh_obj for part in skin_parts.values() for mesh_obj in part]
 
+
+def save(output: str, voxels: List[mesh.Mesh], invent_y: bool = True):
+    """最后处理并保存"""
+    mesh_objs = []
+    for mesh_obj in voxels:
+        if invent_y:
+            vectors = mesh_obj.vectors.reshape(-1, 3)
+            vectors[:, 1] = -vectors[:, 1]
+            mesh_obj.vectors = vectors.reshape(mesh_obj.vectors.shape)
+            for i in range(len(mesh_obj.vectors)):
+                mesh_obj.vectors[i] = np.flip(mesh_obj.vectors[i], axis=0)
+        mesh_objs.append(mesh_obj)
+    handled = mesh.Mesh(np.concatenate([v.data for v in voxels]))
+    handled.save(output)
 
 def rotate_mesh(mesh_obj: mesh.Mesh, pivot: np.ndarray, rotation_matrix: np.ndarray) -> None:
     """旋转单个网格对象"""
@@ -87,3 +102,8 @@ def rotate(
                     rotate_mesh(mesh_obj, pivot, rotation_matrix)
 
     return skin_parts
+
+
+def view_test(output_stl):
+    os.system("taskkill /f /im orca-slicer.exe")
+    os.system(output_stl)

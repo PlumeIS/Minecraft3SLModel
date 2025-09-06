@@ -75,9 +75,9 @@ python generator.py --head_x 15 --head_y 30 --right_arm_x 45 --left_arm_x -20
 ```
 
 ## TODO
-+ 兼容 slim 皮肤
-+ 兼容非 64x 皮肤
-+ 生成支持多色的 3mf文件
++ [x] 兼容 slim 皮肤
++ [ ] 兼容非 64x 皮肤
++ [ ] 生成支持多色的 3mf文件
 
 ##  许可证
 本项目采用 MIT 许可证。详见 LICENSE 文件。
